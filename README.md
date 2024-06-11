@@ -1,9 +1,9 @@
 # taAuthor
 Create XML Author List using INSPIRE HEP format.
 
-Source file to add program to path (optional):
+Recommended: add program to PATH (optional):
 ```bash
-source /full/path/to/this_taauthor.sh
+export PATH=$PATH:/full/path/to/taAuthor
 ```
 
 Usage:
