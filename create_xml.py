@@ -232,7 +232,7 @@ def parse_user_args() -> argparse.Namespace:
     """
     Parse user-supplied CL arguments
     """
-    parser = argparse.ArgumentParser(prog='Author List: CSV to XML',
+    parser = argparse.ArgumentParser(prog='create_xml.py',
                                      description="Converts author list to XML format using INSPIRE formatting "
                                                  "standards.Default settings are for general use, but this should be "
                                                  "used on a publication-by-publication basis. Required argument is "
