@@ -1,6 +1,11 @@
 # taAuthor
 Create XML Author List using INSPIRE HEP format.
 
+Source file to add program to path (optional):
+```bash
+source /full/path/to/this_taauthor.sh
+```
+
 Usage:
 ```bash
 create_xml.py /full/path/to/authorlist.csv "Publication Reference"
