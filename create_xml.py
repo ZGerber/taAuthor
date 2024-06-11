@@ -7,6 +7,7 @@ from typing import Optional, List, Tuple, Dict
 import xml.etree.ElementTree as et
 import argparse
 import csv
+import re
 
 __author__      = 'Zane Gerber'
 __copyright__   = ''
@@ -60,7 +61,7 @@ def get_institution_dict(institution_codes: List[List[str]],
             # Regex to find strings between curly braces
             for i in re.findall(r'\{(?:[^{}])*\}', inst):
                 # Remove curly braces from string
-                inst_dict[c] = i[1:-1]
+                inst_dict[c.strip()] = i[1:-1]
     return inst_dict
 
 
@@ -279,7 +280,6 @@ if __name__ == "__main__":
     args = parse_user_args()
 
     # Load the CSV file
-    institution_file = load_institution_addresses("institutions.ods")
     author_list_file = load_author_csv_list(args.infile)
 
     # Get institution codes and assign unique IDs to them
@@ -373,3 +373,5 @@ if __name__ == "__main__":
         authorid.text = person_opt.author_id
 
         authorFunding = create_sub_ce(person, "cal", "authorFunding")
+
+
