@@ -7,6 +7,14 @@ import xml.etree.ElementTree as et
 import argparse
 import csv
 
+__author__    = 'Zane Gerber'
+__copyright__ = ''
+__credits__   = ''
+__license__   = ''
+__version__   = '1.0.0'
+__maintainer  = 'Zane Gerber'
+__email__     = 'zane.gerber@utah.edu'
+__status__    = 'Production'
 
 def load_institution_addresses(filename: str) -> csv.DictReader:
     return csv.DictReader(open(filename))
