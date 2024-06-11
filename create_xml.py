@@ -60,7 +60,7 @@ def get_institution_dict(institution_codes: List[List[str]],
         for c in code:
             # Regex to find strings between curly braces
             for i in re.findall(r'\{(?:[^{}])*\}', inst):
-                # Remove curly braces from string
+                # Remove curly braces from string and define the dictionary item
                 inst_dict[c.strip()] = i[1:-1]
     return inst_dict
 
@@ -373,5 +373,6 @@ if __name__ == "__main__":
         authorid.text = person_opt.author_id
 
         authorFunding = create_sub_ce(person, "cal", "authorFunding")
+
 
 
