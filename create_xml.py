@@ -16,7 +16,7 @@ __license__     = ''
 __version__     = '1.1.0'
 __maintainer__  = 'Zane Gerber'
 __email__       = 'zane.gerber@utah.edu'
-__status__      = 'Production'
+__status__      = 'Development'
 
 
 def load_author_csv_list(filename: Path) -> List[dict]:
