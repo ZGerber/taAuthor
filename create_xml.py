@@ -248,14 +248,34 @@ def parse_user_args() -> argparse.Namespace:
                         help="Anything that identifies the referenced document. If no immediate identifier, "
                              "the title can be used. Can be internal report number, arXiv number, "
                              "ISBN, DOI, web destination, title.")
+    parser.add_argument('-p', '--pretty', 
+                        help="Choose not to 'pretty print' the XML author list when saving. Saves one continues chunk of text, which is less readable for humans but fine for XML readers.",
+                        action="store_false")
     return parser.parse_args()
+
+
+def _pretty_print(current: et.ElementTree, parent: et.Element=None, index: int=-1, depth:int=0) -> None:
+    """
+    Reformat the XML tree. Pretty print by adding whitespace and new lines.
+    Code copied from https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
+    This can be relpaced with the et.indent() method if using python version >=3.9
+    """
+    for i, node in enumerate(current):
+        _pretty_print(node, current, i, depth + 1)
+    if parent is not None:
+        if index == 0:
+            parent.text = '\n' + ('\t' * depth)
+        else:
+            parent[index - 1].tail = '\n' + ('\t' * depth)
+        if index == len(parent) - 1:
+            current.tail = '\n' + ('\t' * (depth - 1))
 
 
 def create_and_fill_submission_info(user_args) -> Tuple[et.Element, et.Element]:
     submission = Submission(user_args.publication_reference)
-    creationDate = create_ce("cal", "creationDate")
+    creationDate = create_sub_ce(root, "cal", "creationDate")
     creationDate.text = submission.creation_date_str
-    publicationReference = create_ce("cal", "publicationReference")
+    publicationReference = create_sub_ce(root, "cal", "publicationReference")
     publicationReference.text = submission.publication_reference
     return creationDate, publicationReference
 
@@ -275,9 +295,16 @@ if __name__ == "__main__":
     # These namespaces are required for the INSPIRE format
     et.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
     et.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
-
+    
     # Parse command-line arguments
     args = parse_user_args()
+    
+    # Set up ElementTree root
+    root = et.Element("collaborationauthorlist")
+
+    # These namespaces are required for the INSPIRE format
+    root.set("xmlns:cal","http://inspirehep.net/info/HepNames/tools/authors_xml/")
+    root.set("xmlns:foaf", "http://xmlns.com/foaf/0.1/")
 
     # Load the CSV file
     author_list_file = load_author_csv_list(args.infile)
@@ -297,17 +324,17 @@ if __name__ == "__main__":
     # CREATE & FILL CONTAINER ELEMENTS #
     ####################################
     creationDate, publicationReference = create_and_fill_submission_info(args)
-
+    
     # Collaboration data (i.e. info about TA)
     c = Collaboration()
-    collaborations = create_ce("cal", "collaborations")
+    collaborations = create_sub_ce(root, "cal", "collaborations")
     collaboration = create_sub_ce(collaborations, "cal", "collaboration", id=c.id)
     collaboration_name = create_sub_ce(collaboration, "foaf", "name")
     collaboration_name.text = c.name
     # experiment_number = create_sub_ce(collaboration, "cal", "experimentNumber") # Not using this for now.
 
     # Organizations:
-    organizations = create_ce("cal", "organizations")
+    organizations = create_sub_ce(root, "cal", "organizations")
     for code, inst in inst_dict.items():
         org = Organization(name=inst)
         organization = create_sub_ce(organizations, "foaf", "Organization", id=institution_ids[f'{code}'])
@@ -322,7 +349,7 @@ if __name__ == "__main__":
         orgAddress = create_sub_ce(organization, "cal", "orgAddress")
 
     # People
-    authors = create_ce("cal", "authors")
+    authors = create_sub_ce(root, "cal", "authors")
     for auth, institution in zip(author_list_file, institution_codes_by_auth):
         paper_name_string = auth['Initials'] + " " + auth['Surname']
         person_req = Person(auth['Surname'], ' '.join(paper_name_string.split()), "c1", )
@@ -374,5 +401,18 @@ if __name__ == "__main__":
 
         authorFunding = create_sub_ce(person, "cal", "authorFunding")
 
+    if args.pretty:
+        _pretty_print(root)
+    tree = et.ElementTree(root)
 
-
+    ROOT_DIR = Path(__file__).resolve(strict=True).parent
+    date_str = creationDate.text.replace('-', '')
+    Path(ROOT_DIR / date_str).mkdir(exist_ok=True)
+    output_file = ROOT_DIR / date_str / f"{publicationReference.text.replace(' ', '')}.{date_str}.authorlist.xml"
+    
+    with open(output_file, "wb") as f:
+        if args.pretty:
+            f.write('<?xml version="1.0" encoding="UTF-8" ?>\n<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n\n'.encode('utf8'))
+        else:
+            f.write('<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">'.encode('utf8'))
+        tree.write(f, 'utf-8')
