@@ -7,6 +7,7 @@ From https://github.com/inspirehep/author.xml:
 
 We recommend that when submitting your document, you also submit an authorlist file called author.xml. Large collaborations with hundreds and even thousands of authors are already using the author.xml file to enable cataloguers and automated processes to glean complete, accurate information on authors. So, let's all be "on the same page" and ensure that authors get recognition for their contributions."
 
+## Guide
 Usage:
 ```bash
 create_xml.py /full/path/to/authorlist.csv "Publication Reference"
