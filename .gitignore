@@ -161,4 +161,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-!20*/
+20*/
+/20240621/
+/20240613/
