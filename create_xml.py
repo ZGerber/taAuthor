@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 
-from dataclasses import dataclass, field
-from datetime import datetime as dt
+import submissions
+import people
+import collaborations
+import organizations
+
 from pathlib import Path
-from typing import Optional, List, Tuple, Dict
+from typing import List, Tuple, Dict
 import xml.etree.ElementTree as et
 import argparse
 import csv
 import re
 
-__author__      = 'Zane Gerber'
-__copyright__   = ''
-__credits__     = ''
-__license__     = ''
-__version__     = '1.1.0'
-__maintainer__  = 'Zane Gerber'
-__email__       = 'zane.gerber@utah.edu'
-__status__      = 'Development'
+__author__ = 'Zane Gerber'
+__maintainer__ = 'Zane Gerber'
+__email__ = 'zane.gerber@utah.edu'
+__status__ = 'Development'
 
 
 def load_author_csv_list(filename: Path) -> List[dict]:
@@ -50,7 +49,7 @@ def get_institution_addresses(authors: List[dict]) -> List[List[str]]:
     return [a['Institution'] for a in authors]
 
 
-def get_institution_dict(institution_codes: List[List[str]], 
+def get_institution_dict(institution_codes: List[List[str]],
                          institution_addresses: List[List[str]]) -> Dict[str, str]:
     """
     Return a dictionary where each key is an institution code and the value is the corresponding institution address.
@@ -115,119 +114,6 @@ def assign_institution_ids(unique_institutions: List[str]) -> dict:
     return {inst: f"a{i}" for i, inst in enumerate(unique_institutions, 1)}
 
 
-@dataclass
-class Submission:
-    """
-    Data class containing submission-specific information.
-    """
-    _publication_reference: str  # Can be internal report number, arXiv number, ISBN, DOI, web destination, title
-    _creation_date: dt = dt.now()
-    is_multicollab: bool = False  # Change to TRUE if multiple collaborations publishing together.
-
-    @property
-    def publication_reference(self):
-        """
-        Returns the publication reference as a string
-        """
-        return self._publication_reference
-
-    @property
-    def creation_date(self):
-        """
-        Returns the creation date as a datetime object.
-        """
-        return self._creation_date
-
-    @creation_date.setter
-    def creation_date(self, date):
-        """
-        Sets creation_date attribute to 'date'. Useful if you don't want the creation date to be today.
-        """
-        self._creation_date = date
-
-    @property
-    def creation_date_str(self):
-        """
-        Returns the creation date as a string.
-        """
-        return self.creation_date.strftime("%Y-%m-%d")
-
-    def __post_init__(self):
-        """
-        This feature is not yet complete.
-        """
-        if self.is_multicollab:
-            print("ERROR: Multi-collaboration not yet implemented.")
-
-
-@dataclass
-class Person:
-    """
-    Data class containing REQUIRED information about individual authors.
-    In the XML file, one or more "Person" containers belong inside the "Authors" container element.
-    """
-    _family_name: str  # Author's surname
-    _author_name_paper: str  # Name of author as it appears on title page of paper. Usually "Initials + Surname"
-    _author_collaboration: str  #
-
-    @property
-    def family_name(self):
-        return self._family_name
-
-    @property
-    def author_name_paper(self):
-        return self._author_name_paper
-
-    @property
-    def author_collaboration(self):
-        return self._author_collaboration
-
-
-@dataclass
-class PersonOptions:
-    """
-    Data class containing OPTIONAL information about individual authors.
-    In the XML file, this belongs inside the "Authors" container element.
-    """
-    initials: Optional[str] = None  # Author's initials for papers
-    author_id: Optional[str] = None  # ORCID is preferred
-    given_name: Optional[str] = None  # Author's first/given name. Can be blank but generally it's populated.
-    author_name_native: Optional[str] = None  # Author's name written in their native language
-    author_suffix: Optional[str] = None  # e.g. Jr.,  Sr., III.
-    author_status: Optional[str] = None  # Describes vital status of author. If deceased, use "Deceased". Otherwise blank.
-    author_name_paper_given: Optional[str] = None  # given name as it appears on title page of paper
-    author_name_paper_family: Optional[str] = None  # family name as it appears on title page of paper
-    position: Optional[str] = None  # Author's position. May be "Spokesperson", "Contact person", "Speaker" or "Editor".
-    author_funding: Optional[str] = None  # Describes the author's funding source, such as a grant or fellowship if necessary
-
-
-@dataclass
-class Collaboration:
-    """
-    Container element with information about the collaboration.
-    In the XML file, this belongs inside the "Collaborations" container element.
-    """
-    name: str = "TELESCOPE-ARRAY"  # Name of the collaboration.
-    id: str = "c1"  # OPT: Is only needed if two (2) or more collaborations publish together.
-    group: Optional[str] = None  # OPT: can be used for collaborations wishing to group institutions together
-    experiment_number: Optional[str] = None  # OPT: For experiments within collaboration, e.g. TALE, TAX4
-
-
-@dataclass
-class Organization:
-    """
-    Goes inside the "Organizations" container element.
-    Container element with information about an organization with which authors are affiliated.
-    There may be one or more organizations within the Organizations container, and each organization
-    is identified by the 'id' attribute.
-    """
-    name: str  # Name of the organization as it will appear on the document.
-    org_domain: Optional[str] = None  # OPT: Persistent web address for organization
-    org_name: Optional[str] = None  # OPT: name in format of INSPIRE, ROR, etc. Specify with "source" (below).
-    org_status: Optional[str] = "Member"  # OPT: status of organization within collaboration. Typically, “member” or “nonmember.”
-    org_address: Optional[str] = None  # OPT: Full address of institution as it would be written on letter head.
-
-
 def parse_user_args() -> argparse.Namespace:
     """
     Parse user-supplied CL arguments
@@ -238,7 +124,7 @@ def parse_user_args() -> argparse.Namespace:
                                                  "used on a publication-by-publication basis. Required argument is "
                                                  "a publication reference. There is also an option for "
                                                  "multi-collaboration submissions.",
-                                     epilog="Developed by Z.Gerber July 2023")
+                                     epilog="Report bugs to Z. Gerber (zane.gerber@utah.edu)")
     parser.add_argument('infile', type=str, metavar="infile", help="/full/path/to/authorlist.csv")
     parser.add_argument('-m', '--multi-collab',
                         help="Use this option if more than one collaboration is publishing together on the same paper."
@@ -248,13 +134,13 @@ def parse_user_args() -> argparse.Namespace:
                         help="Anything that identifies the referenced document. If no immediate identifier, "
                              "the title can be used. Can be internal report number, arXiv number, "
                              "ISBN, DOI, web destination, title.")
-    parser.add_argument('-p', '--pretty', 
-                        help="Choose not to 'pretty print' the XML author list when saving. Saves one continues chunk of text, which is less readable for humans but fine for XML readers.",
+    parser.add_argument('-p', '--pretty',
+                        help="Choose NOT to 'pretty print' the XML author list when saving. Selecting this option saves the output as one continuous chunk of text, which is less readable for humans but fine for XML readers.",
                         action="store_false")
     return parser.parse_args()
 
 
-def _pretty_print(current: et.ElementTree, parent: et.Element=None, index: int=-1, depth:int=0) -> None:
+def _pretty_print(current: et.ElementTree, parent: et.Element = None, index: int = -1, depth: int = 0) -> None:
     """
     Reformat the XML tree. Pretty print by adding whitespace and new lines.
     Code copied from https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
@@ -272,7 +158,7 @@ def _pretty_print(current: et.ElementTree, parent: et.Element=None, index: int=-
 
 
 def create_and_fill_submission_info(user_args) -> Tuple[et.Element, et.Element]:
-    submission = Submission(user_args.publication_reference)
+    submission = submissions.Submission(user_args.publication_reference)
     creationDate = create_sub_ce(root, "cal", "creationDate")
     creationDate.text = submission.creation_date_str
     publicationReference = create_sub_ce(root, "cal", "publicationReference")
@@ -292,18 +178,18 @@ def main() -> None:
 if __name__ == "__main__":
     # main()
 
-    # These namespaces are required for the INSPIRE format
-    et.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
-    et.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
-    
     # Parse command-line arguments
     args = parse_user_args()
-    
+
     # Set up ElementTree root
     root = et.Element("collaborationauthorlist")
 
     # These namespaces are required for the INSPIRE format
-    root.set("xmlns:cal","http://inspirehep.net/info/HepNames/tools/authors_xml/")
+    # et.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
+    # et.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
+
+    # These namespaces are required for the INSPIRE format
+    root.set("xmlns:cal", "http://inspirehep.net/info/HepNames/tools/authors_xml/")
     root.set("xmlns:foaf", "http://xmlns.com/foaf/0.1/")
 
     # Load the CSV file
@@ -311,39 +197,39 @@ if __name__ == "__main__":
 
     # Get institution codes and assign unique IDs to them
     institution_codes_by_auth = get_institution_codes(author_list_file)
-    institution_codes = get_unique_institution_codes(institution_codes_by_auth)
-    institution_addresses = get_institution_addresses(author_list_file)
-    institution_ids = assign_institution_ids(institution_codes)
-    inst_dict = get_institution_dict(institution_codes_by_auth, institution_addresses)
+    institution_codes         = get_unique_institution_codes(institution_codes_by_auth)
+    institution_addresses     = get_institution_addresses(author_list_file)
+    institution_ids           = assign_institution_ids(institution_codes)
+    inst_dict                 = get_institution_dict(institution_codes_by_auth, institution_addresses)
 
     # Count authors and institutions
-    n_authors = get_number_of_authors(author_list_file)
+    n_authors      = get_number_of_authors(author_list_file)
     n_institutions = get_number_of_institutions(institution_codes)
 
     ####################################
     # CREATE & FILL CONTAINER ELEMENTS #
     ####################################
     creationDate, publicationReference = create_and_fill_submission_info(args)
-    
+
     # Collaboration data (i.e. info about TA)
-    c = Collaboration()
-    collaborations = create_sub_ce(root, "cal", "collaborations")
-    collaboration = create_sub_ce(collaborations, "cal", "collaboration", id=c.id)
-    collaboration_name = create_sub_ce(collaboration, "foaf", "name")
+    c                       = collaborations.Collaboration()
+    collaborations          = create_sub_ce(root, "cal", "collaborations")
+    collaboration           = create_sub_ce(collaborations, "cal", "collaboration", id=c.id)
+    collaboration_name      = create_sub_ce(collaboration, "foaf", "name")
     collaboration_name.text = c.name
     # experiment_number = create_sub_ce(collaboration, "cal", "experimentNumber") # Not using this for now.
 
     # Organizations:
-    organizations = create_sub_ce(root, "cal", "organizations")
+    orgs = create_sub_ce(root, "cal", "organizations")
     for code, inst in inst_dict.items():
-        org = Organization(name=inst)
-        organization = create_sub_ce(organizations, "foaf", "Organization", id=institution_ids[f'{code}'])
+        org = organizations.Organization(name=inst)
+        organization = create_sub_ce(orgs, "foaf", "Organization", id=institution_ids[f'{code}'])
         orgDomain = create_sub_ce(organization, "cal", "orgDomain")
         name = create_sub_ce(organization, "foaf", "name")
         name.text = org.name
-        orgName = create_sub_ce(organization, "cal", "orgName", source="INSPIRE")
-        orgName = create_sub_ce(organization, "cal", "orgName", source="ROR")
-        orgName = create_sub_ce(organization, "cal", "orgName", source="INTERNAL")
+        create_sub_ce(organization, "cal", "orgName", source="INSPIRE")
+        create_sub_ce(organization, "cal", "orgName", source="ROR")
+        create_sub_ce(organization, "cal", "orgName", source="INTERNAL")
         orgStatus = create_sub_ce(organization, "cal", "orgStatus", collaborationid="c1")
         orgStatus.text = org.org_status
         orgAddress = create_sub_ce(organization, "cal", "orgAddress")
@@ -352,12 +238,12 @@ if __name__ == "__main__":
     authors = create_sub_ce(root, "cal", "authors")
     for auth, institution in zip(author_list_file, institution_codes_by_auth):
         paper_name_string = auth['Initials'] + " " + auth['Surname']
-        person_req = Person(auth['Surname'], ' '.join(paper_name_string.split()), "c1", )
-        person_opt = PersonOptions(initials=auth['Initials'],
-                                   author_id=auth['ORCID'],
-                                   given_name=auth['Given Name'],
-                                   author_name_paper_given=auth['Initials'],
-                                   author_name_paper_family=auth['Surname'], )
+        person_req = people.Person(auth['Surname'], ' '.join(paper_name_string.split()), "c1", )
+        person_opt = people.PersonOptions(initials=auth['Initials'],
+                                          author_id=auth['ORCID'],
+                                          given_name=auth['Given Name'],
+                                          author_name_paper_given=auth['Initials'],
+                                          author_name_paper_family=auth['Surname'], )
 
         person = create_sub_ce(authors, "foaf", "Person")
 
@@ -374,21 +260,15 @@ if __name__ == "__main__":
         familyName.text = person_req.family_name
 
         authorSuffix = create_sub_ce(person, "cal", "authorSuffix")
-
         authorStatus = create_sub_ce(person, "cal", "authorStatus")
-
         authorNamePaper = create_sub_ce(person, "cal", "authorNamePaper")
         authorNamePaper_str = person_opt.initials + " " + person_req.family_name
         authorNamePaper.text = ' '.join(authorNamePaper_str.split())
-
         authorNamePaperGiven = create_sub_ce(person, "cal", "authorNamePaperGiven")
         authorNamePaperGiven.text = person_opt.initials
-
         authorNamePaperFamily = create_sub_ce(person, "cal", "authorNamePaperFamily")
         authorNamePaperFamily.text = person_req.family_name
-
         authorCollaboration = create_sub_ce(person, "cal", "authorCollaboration", collaborationid="c1")
-
         authorAffiliations = create_sub_ce(person, "cal", "authorAffiliations")
         for inst in institution:
             authorAffiliation = create_sub_ce(authorAffiliations, "cal", "authorAffiliation",
@@ -398,7 +278,6 @@ if __name__ == "__main__":
         authorids = create_sub_ce(person, "cal", "authorids")
         authorid = create_sub_ce(authorids, "cal", "authorid", source="ORCID")
         authorid.text = person_opt.author_id
-
         authorFunding = create_sub_ce(person, "cal", "authorFunding")
 
     if args.pretty:
@@ -409,7 +288,7 @@ if __name__ == "__main__":
     date_str = creationDate.text.replace('-', '')
     Path(ROOT_DIR / date_str).mkdir(exist_ok=True)
     output_file = ROOT_DIR / date_str / f"{publicationReference.text.replace(' ', '')}.{date_str}.authorlist.xml"
-    
+
     with open(output_file, "wb") as f:
         if args.pretty:
             f.write('<?xml version="1.0" encoding="UTF-8" ?>\n<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n\n'.encode('utf8'))
