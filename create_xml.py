@@ -22,14 +22,29 @@ def load_author_csv_list(filename: Path) -> List[dict]:
     """
     Read in the CSV-formatted author list and return entries in a list.
     """
-    return list(csv.DictReader(open(filename)))
+    try:
+        with open(filename, 'r') as file:
+            return list(csv.DictReader(file))
+    except FileNotFoundError:
+        print(f"Error: The file {filename} was not found.")
+        exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
 
 
 def load_author_csv_dr(file: str) -> csv.DictReader:
     """
     Read in the CSV-formatted author list and return a DictReader object.
     """
-    return csv.DictReader(open(file))
+    try:
+        return csv.DictReader(open(file))
+    except FileNotFoundError:
+        print(f"Error: The file {file} was not found.")
+        exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
 
 
 def get_institution_codes(authors: List[dict]) -> List[List[str]]:
@@ -167,26 +182,11 @@ def create_and_fill_submission_info(user_args) -> Tuple[et.Element, et.Element]:
 
 
 def main() -> None:
-    # Read CSV File
-    # Loop over authors
-    # Create data containers
-    # Fill data containers with author info
-    # Write to XML file
-    return
-
-
-if __name__ == "__main__":
-    # main()
-
     # Parse command-line arguments
     args = parse_user_args()
 
     # Set up ElementTree root
     root = et.Element("collaborationauthorlist")
-
-    # These namespaces are required for the INSPIRE format
-    # et.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
-    # et.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
 
     # These namespaces are required for the INSPIRE format
     root.set("xmlns:cal", "http://inspirehep.net/info/HepNames/tools/authors_xml/")
@@ -197,13 +197,13 @@ if __name__ == "__main__":
 
     # Get institution codes and assign unique IDs to them
     institution_codes_by_auth = get_institution_codes(author_list_file)
-    institution_codes         = get_unique_institution_codes(institution_codes_by_auth)
-    institution_addresses     = get_institution_addresses(author_list_file)
-    institution_ids           = assign_institution_ids(institution_codes)
-    inst_dict                 = get_institution_dict(institution_codes_by_auth, institution_addresses)
+    institution_codes = get_unique_institution_codes(institution_codes_by_auth)
+    institution_addresses = get_institution_addresses(author_list_file)
+    institution_ids = assign_institution_ids(institution_codes)
+    inst_dict = get_institution_dict(institution_codes_by_auth, institution_addresses)
 
     # Count authors and institutions
-    n_authors      = get_number_of_authors(author_list_file)
+    n_authors = get_number_of_authors(author_list_file)
     n_institutions = get_number_of_institutions(institution_codes)
 
     ####################################
@@ -212,12 +212,11 @@ if __name__ == "__main__":
     creationDate, publicationReference = create_and_fill_submission_info(args)
 
     # Collaboration data (i.e. info about TA)
-    c                       = collaborations.Collaboration()
-    collaborations          = create_sub_ce(root, "cal", "collaborations")
-    collaboration           = create_sub_ce(collaborations, "cal", "collaboration", id=c.id)
-    collaboration_name      = create_sub_ce(collaboration, "foaf", "name")
+    c = collaborations.Collaboration()
+    collaborations_el = create_sub_ce(root, "cal", "collaborations")
+    collaboration = create_sub_ce(collaborations_el, "cal", "collaboration", id=c.id)
+    collaboration_name = create_sub_ce(collaboration, "foaf", "name")
     collaboration_name.text = c.name
-    # experiment_number = create_sub_ce(collaboration, "cal", "experimentNumber") # Not using this for now.
 
     # Organizations:
     orgs = create_sub_ce(root, "cal", "organizations")
@@ -289,9 +288,17 @@ if __name__ == "__main__":
     Path(ROOT_DIR / date_str).mkdir(exist_ok=True)
     output_file = ROOT_DIR / date_str / f"{publicationReference.text.replace(' ', '')}.{date_str}.authorlist.xml"
 
-    with open(output_file, "wb") as f:
-        if args.pretty:
-            f.write('<?xml version="1.0" encoding="UTF-8" ?>\n<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n\n'.encode('utf8'))
-        else:
-            f.write('<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">'.encode('utf8'))
-        tree.write(f, 'utf-8')
+    try:
+        with open(output_file, "wb") as f:
+            if args.pretty:
+                f.write('<?xml version="1.0" encoding="UTF-8" ?>\n<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n\n'.encode('utf8'))
+            else:
+                f.write('<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">'.encode('utf8'))
+            tree.write(f, 'utf-8')
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -12,3 +12,9 @@ class Collaboration:
     id: str = "c1"  # OPT: Is only needed if two (2) or more collaborations publish together.
     group: Optional[str] = None  # OPT: can be used for collaborations wishing to group institutions together
     experiment_number: Optional[str] = None  # OPT: For experiments within collaboration, e.g. TALE, TAX4
+
+    def __post_init__(self):
+        if not self.name:
+            raise ValueError("Collaboration name cannot be empty.")
+        if not self.id:
+            raise ValueError("Collaboration id cannot be empty.")

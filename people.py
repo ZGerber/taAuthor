@@ -24,6 +24,14 @@ class Person:
     def author_collaboration(self):
         return self._author_collaboration
 
+    def __post_init__(self):
+        if not self._family_name:
+            raise ValueError("Family name cannot be empty.")
+        if not self._author_name_paper:
+            raise ValueError("Author name paper cannot be empty.")
+        if not self._author_collaboration:
+            raise ValueError("Author collaboration cannot be empty.")
+
 
 @dataclass
 class PersonOptions:
@@ -42,3 +50,6 @@ class PersonOptions:
     position: Optional[str] = None  # Author's position. May be "Spokesperson", "Contact person", "Speaker" or "Editor".
     author_funding: Optional[str] = None  # Describes the author's funding source, such as a grant or fellowship if necessary
 
+    def __post_init__(self):
+        if self.author_status and self.author_status != "Deceased":
+            raise ValueError("Author status must be 'Deceased' or None.")
