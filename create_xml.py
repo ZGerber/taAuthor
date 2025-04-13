@@ -7,9 +7,6 @@ from typing import List
 import xml.etree.ElementTree as et
 
 import submissions
-# import collaborations
-# import organizations
-# import people
 from builder import AuthorListXMLBuilder
 from xml_utils import pretty_print
 
