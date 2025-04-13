@@ -1,20 +1,94 @@
 # taAuthor
-Create XML Author List using INSPIRE HEP format.
 
-## Background & Motivation
-From https://github.com/inspirehep/author.xml:
-"Together, INSPIRE, the American Physical Society and arXiv.org have created a template file that you are recommended to use when you provide information about the authors for the submission of your paper. By utilizing unique ID's for authors and organizations (e.g. INSPIRE ID, ORCID, ROR), not only will your authors' information be precise and universally understood, but author information linking to professional information — affiliations, grants, publications, peer review, and more will get exposed.
+Generate `author.xml` files for journal submissions using the INSPIRE HEP format.
 
-We recommend that when submitting your document, you also submit an authorlist file called author.xml. Large collaborations with hundreds and even thousands of authors are already using the author.xml file to enable cataloguers and automated processes to glean complete, accurate information on authors. So, let's all be "on the same page" and ensure that authors get recognition for their contributions."
+## 🧾 Overview
 
-## Guide
-Usage:
+`taAuthor` is a modular Python tool that converts a CSV-formatted author list into a valid XML file conforming to the INSPIRE HEP `author.dtd` specification. This format is required by many journals and repositories, including arXiv and APS, to ensure proper indexing of authors, affiliations, and collaborations.
+
+This tool is designed for large collaborations like Telescope Array and supports:
+
+- Unique institution IDs
+- Multiple affiliations per author
+- ORCID-based author identification
+- Properly structured XML with optional pretty printing
+
+## 🔧 Requirements
+
+- Python 3.7+
+- No external libraries required (uses `xml.etree.ElementTree` and Python stdlib)
+
+## 📦 File Structure
+
+- `create_xml.py` — CLI script to generate the XML.
+- `collaborations.py` — Defines the collaboration structure (e.g., TA, TAx4).
+- `organizations.py` — Parses institutional metadata.
+- `people.py` — Handles author data and optional fields.
+- `submissions.py` — Tracks publication metadata and submission date.
+- `author.dtd` — DTD declaration for XML validation (included in output).
+- `README.md` — You are here.
+
+## 🚀 Usage
+
+Run from the command line:
+
 ```bash
-create_xml.py /full/path/to/authorlist.csv "Publication Reference"
+python create_xml.py /full/path/to/authorlist.csv "Publication Reference"
 ```
-"Publication Reference" can be an internal report number, arXiv number, ISBN, DOI, web destination, title, etc.
 
-For more see:
+### Example
+
 ```bash
-create_xml.py --help 
+python create_xml.py authors.csv "TA Internal Note 2025-04"
 ```
+
+### Optional Flags
+
+- `--multi-collab`  
+  Reserved for future support of multi-collaboration papers. Not yet implemented.
+
+- `--pretty`  
+  Pretty-print the XML output for human readability (default). Use `--no-pretty` to output a compact XML string.
+
+### Output
+
+The script creates a subdirectory named by the current date (`YYYYMMDD`) and saves the file as:
+
+```
+PublicationReference.YYYYMMDD.authorlist.xml
+```
+
+The file begins with:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">
+```
+
+## 📑 Input Format (CSV)
+
+The CSV file must include at least these columns:
+
+- `Surname`
+- `Initials`
+- `Given Name`
+- `Institution`
+- `Institution Code`
+- `ORCID`
+
+Each author may have multiple institutions (separated by commas in the `Institution Code` field). Institution names may contain `{}` brackets to extract formal names.
+
+## 📚 References & Standards
+
+Based on INSPIRE guidelines:
+> https://github.com/inspirehep/author.xml
+
+This project ensures that:
+- Author metadata is properly associated with institutions.
+- ORCID identifiers and collaboration info are embedded.
+- Submission records are ready for downstream processing.
+
+## 👤 Author
+
+**Zane Gerber**  
+zane.gerber@utah.edu
