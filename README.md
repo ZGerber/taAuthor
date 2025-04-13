@@ -18,7 +18,7 @@ This tool is designed for large collaborations like Telescope Array and supports
 - Python 3.7+
 - No external libraries required (uses `xml.etree.ElementTree` and Python stdlib)
 
-## 📦 File Structure
+## File Structure
 
 - `create_xml.py` — CLI script to generate the XML.
 - `collaborations.py` — Defines the collaboration structure (e.g., TA, TAx4).
@@ -28,7 +28,7 @@ This tool is designed for large collaborations like Telescope Array and supports
 - `author.dtd` — DTD declaration for XML validation (included in output).
 - `README.md` — You are here.
 
-## 🚀 Usage
+## Usage
 
 Run from the command line:
 
@@ -65,7 +65,7 @@ The file begins with:
 <!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">
 ```
 
-## 📑 Input Format (CSV)
+## Input Format (CSV)
 
 The CSV file must include at least these columns:
 
@@ -78,7 +78,7 @@ The CSV file must include at least these columns:
 
 Each author may have multiple institutions (separated by commas in the `Institution Code` field). Institution names may contain `{}` brackets to extract formal names.
 
-## 📚 References & Standards
+## References & Standards
 
 Based on INSPIRE guidelines:
 > https://github.com/inspirehep/author.xml
@@ -88,7 +88,7 @@ This project ensures that:
 - ORCID identifiers and collaboration info are embedded.
 - Submission records are ready for downstream processing.
 
-## 👤 Author
+## Author
 
 **Zane Gerber**  
 zane.gerber@utah.edu
