@@ -88,6 +88,23 @@ This project ensures that:
 - ORCID identifiers and collaboration info are embedded.
 - Submission records are ready for downstream processing.
 
+
+## ✅ Validation with `xmllint`
+
+To ensure your generated XML file is valid according to INSPIRE's DTD specification, use the following command:
+
+```bash
+cp author.dtd YYYYMMDD/
+xmllint --dtdvalid author.dtd YYYYMMDD/YourOutputFile.authorlist.xml --noout
+```
+
+**Important:**  
+- `author.dtd` **must be in the same directory** as the XML file you're validating (or use an absolute path in the DOCTYPE).
+- If validation fails due to a missing DTD, `xmllint` will report:
+  ```
+  warning: failed to load external entity "author.dtd"
+  ```
+
 ## Author
 
 **Zane Gerber**  
