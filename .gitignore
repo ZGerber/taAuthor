@@ -161,6 +161,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Local author list (do not commit)
+ta_author.CURRENT.csv
+
 20*/
 /20240621/
 /20240613/
