@@ -7,16 +7,17 @@ def get_institution_codes(authors: List[dict]) -> List[List[str]]:
     return [a['Institution Code'].split(',') for a in authors]
 
 
-def get_institution_addresses(authors: List[dict]) -> List[List[str]]:
+def get_institution_addresses(authors: List[dict]) -> List[str]:
     return [a['Institution'] for a in authors]
 
 
-def get_institution_dict(institution_codes: List[List[str]], institution_addresses: List[List[str]]) -> Dict[str, str]:
+def get_institution_dict(institution_codes: List[List[str]], institution_addresses: List[str]) -> Dict[str, str]:
     inst_dict = {}
-    for code, inst in zip(institution_codes, institution_addresses):
-        for c in code:
-            for i in re.findall(r'\{([^{}]*)\}', inst):
-                inst_dict[c.strip()] = i.strip()
+    for code_list, inst_str in zip(institution_codes, institution_addresses):
+        codes = [c.strip() for c in code_list]
+        blocks = re.findall(r'\{([^{}]*)\}', inst_str)
+        for code, block in zip(codes, blocks):
+            inst_dict[code] = block.strip()
     return inst_dict
 
 
@@ -54,8 +55,8 @@ def pretty_print(current: et.Element, parent: et.Element = None, index: int = -1
         pretty_print(node, current, i, depth + 1)
     if parent is not None:
         if index == 0:
-            parent.text = '' + ('	' * depth)
+            parent.text = '\n' + ('\t' * depth)
         else:
-            parent[index - 1].tail = '' + ('	' * depth)
+            parent[index - 1].tail = '\n' + ('\t' * depth)
         if index == len(parent) - 1:
-            current.tail = '' + ('	' * (depth - 1))
+            current.tail = '\n' + ('\t' * (depth - 1))

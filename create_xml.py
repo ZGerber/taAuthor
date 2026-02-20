@@ -24,7 +24,7 @@ def parse_user_args() -> argparse.Namespace:
     parser.add_argument('infile', type=str, help="Full path to authorlist.csv")
     parser.add_argument('publication_reference', type=str, help="Internal report, arXiv ID, DOI, or title")
     parser.add_argument('-m', '--multi-collab', action="store_true", help="Support for multi-collab (not yet implemented)")
-    parser.add_argument('-p', '--pretty', action="store_false", help="Disable pretty-printing of output XML")
+    parser.add_argument('-p', '--pretty', action='store_true', help='Pretty-print XML for human reading (line breaks and indentation)')
     return parser.parse_args()
 
 

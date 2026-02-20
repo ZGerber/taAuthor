@@ -47,8 +47,8 @@ python create_xml.py authors.csv "TA Internal Note 2025-04"
 - `--multi-collab`  
   Reserved for future support of multi-collaboration papers. Not yet implemented.
 
-- `--pretty`  
-  Pretty-print the XML output for human readability (default). Use `--no-pretty` to output a compact XML string.
+- `--pretty` (or `-p`)  
+  Pretty-print the XML with line breaks and indentation for human reading. Default is compact output (suitable for INSPIRE/arXiv).
 
 ### Output
 
